@@ -15,6 +15,12 @@ const ui = {
             folderMenu.className = 'context-menu';
             folderMenu.id = 'folder-context-menu';
             folderMenu.innerHTML = `
+                <div class="context-menu-item" id="download-folder-option">
+                    <i class="fas fa-download"></i> <span data-i18n="actions.download">Descargar</span>
+                </div>
+                <div class="context-menu-item" id="favorite-folder-option">
+                    <i class="fas fa-star"></i> <span data-i18n="actions.favorite">Añadir a favoritos</span>
+                </div>
                 <div class="context-menu-item" id="rename-folder-option">
                     <i class="fas fa-edit"></i> <span data-i18n="actions.rename">Renombrar</span>
                 </div>
@@ -37,6 +43,15 @@ const ui = {
             fileMenu.className = 'context-menu';
             fileMenu.id = 'file-context-menu';
             fileMenu.innerHTML = `
+                <div class="context-menu-item" id="view-file-option">
+                    <i class="fas fa-eye"></i> <span data-i18n="actions.view">Ver</span>
+                </div>
+                <div class="context-menu-item" id="download-file-option">
+                    <i class="fas fa-download"></i> <span data-i18n="actions.download">Descargar</span>
+                </div>
+                <div class="context-menu-item" id="favorite-file-option">
+                    <i class="fas fa-star"></i> <span data-i18n="actions.favorite">Añadir a favoritos</span>
+                </div>
                 <div class="context-menu-item" id="share-file-option">
                     <i class="fas fa-share-alt"></i> <span data-i18n="actions.share">Compartir</span>
                 </div>
@@ -754,9 +769,32 @@ const ui = {
             });
         });
 
-        // Download on click
+        // View or download on click
         fileGridElement.addEventListener('click', () => {
-            window.location.href = `/api/files/${file.id}`;
+            // Track this file access for recent files
+            if (window.recent) {
+                document.dispatchEvent(new CustomEvent('file-accessed', {
+                    detail: { file }
+                }));
+            }
+            
+            // Check if it's a viewable file type
+            if ((file.mime_type && file.mime_type.startsWith('image/')) || 
+                (file.mime_type && file.mime_type === 'application/pdf')) {
+                // Open in the inline viewer
+                if (window.inlineViewer) {
+                    window.inlineViewer.openFile(file);
+                } else if (window.fileViewer) {
+                    // Fallback to standard file viewer
+                    window.fileViewer.open(file);
+                } else {
+                    // No viewer available, download directly
+                    window.location.href = `/api/files/${file.id}`;
+                }
+            } else {
+                // For other file types, download directly
+                window.location.href = `/api/files/${file.id}`;
+            }
         });
 
         // Context menu
@@ -811,9 +849,32 @@ const ui = {
             });
         });
 
-        // Download on click
+        // View or download on click
         fileListElement.addEventListener('click', () => {
-            window.location.href = `/api/files/${file.id}`;
+            // Track this file access for recent files
+            if (window.recent) {
+                document.dispatchEvent(new CustomEvent('file-accessed', {
+                    detail: { file }
+                }));
+            }
+            
+            // Check if it's a viewable file type
+            if ((file.mime_type && file.mime_type.startsWith('image/')) || 
+                (file.mime_type && file.mime_type === 'application/pdf')) {
+                // Open in the inline viewer
+                if (window.inlineViewer) {
+                    window.inlineViewer.openFile(file);
+                } else if (window.fileViewer) {
+                    // Fallback to standard file viewer
+                    window.fileViewer.open(file);
+                } else {
+                    // No viewer available, download directly
+                    window.location.href = `/api/files/${file.id}`;
+                }
+            } else {
+                // For other file types, download directly
+                window.location.href = `/api/files/${file.id}`;
+            }
         });
 
         // Context menu (list view)

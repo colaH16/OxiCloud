@@ -18,12 +18,15 @@
     "move": "Move to...",
     "move_to": "Move to",
     "delete": "Delete",
+    "download": "Download",
+    "view": "View",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "share": "Share",
     "copy": "Copy",
     "notify": "Notify",
-    "send": "Send"
+    "send": "Send",
+    "clear_recent": "Clear recent"
   },
   "share": {
     "dialogTitle": "Share Link",
@@ -243,5 +246,12 @@
     "admin_password": "Admin password",
     "create_admin": "Create administrator",
     "back_to_login": "Already set up?"
+  },
+  "viewer": {
+    "unsupported_file": "This file type cannot be previewed.",
+    "download_file": "Download file",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "zoom_reset": "Reset zoom"
   }
 }

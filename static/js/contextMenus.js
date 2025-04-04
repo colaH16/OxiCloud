@@ -10,6 +10,43 @@ const contextMenus = {
      */
     assignMenuEvents() {
         // Folder context menu options
+        document.getElementById('download-folder-option').addEventListener('click', () => {
+            if (window.app.contextMenuTargetFolder) {
+                window.fileOps.downloadFolder(
+                    window.app.contextMenuTargetFolder.id,
+                    window.app.contextMenuTargetFolder.name
+                );
+            }
+            window.ui.closeContextMenu();
+        });
+        
+        document.getElementById('favorite-folder-option').addEventListener('click', () => {
+            if (window.app.contextMenuTargetFolder) {
+                const folder = window.app.contextMenuTargetFolder;
+                
+                // Check if folder is already in favorites to toggle
+                if (window.favorites && window.favorites.isFavorite(folder.id, 'folder')) {
+                    // Remove from favorites
+                    window.favorites.removeFromFavorites(folder.id, 'folder');
+                    // Update menu item text
+                    document.getElementById('favorite-folder-option').querySelector('span').textContent = 
+                        window.i18n ? window.i18n.t('actions.favorite') : 'Añadir a favoritos';
+                } else {
+                    // Add to favorites
+                    window.favorites.addToFavorites(
+                        folder.id,
+                        folder.name,
+                        'folder',
+                        folder.parent_id
+                    );
+                    // Update menu item text
+                    document.getElementById('favorite-folder-option').querySelector('span').textContent = 
+                        window.i18n ? window.i18n.t('actions.unfavorite') : 'Quitar de favoritos';
+                }
+            }
+            window.ui.closeContextMenu();
+        });
+        
         document.getElementById('rename-folder-option').addEventListener('click', () => {
             if (window.app.contextMenuTargetFolder) {
                 this.showRenameDialog(window.app.contextMenuTargetFolder);
@@ -42,6 +79,84 @@ const contextMenus = {
         });
 
         // File context menu options
+        document.getElementById('view-file-option').addEventListener('click', () => {
+            if (window.app.contextMenuTargetFile) {
+                // Fetch file details to get the mime type
+                fetch(`/api/files/${window.app.contextMenuTargetFile.id}?metadata=true`)
+                    .then(response => response.json())
+                    .then(fileDetails => {
+                        // Check if viewable file type
+                        if ((fileDetails.mime_type && fileDetails.mime_type.startsWith('image/')) || 
+                            (fileDetails.mime_type && fileDetails.mime_type === 'application/pdf')) {
+                            // Open with inline viewer
+                            if (window.inlineViewer) {
+                                window.inlineViewer.openFile(fileDetails);
+                            } else if (window.fileViewer) {
+                                window.fileViewer.open(fileDetails);
+                            } else {
+                                // If no viewer is available, download directly
+                                window.fileOps.downloadFile(
+                                    window.app.contextMenuTargetFile.id,
+                                    window.app.contextMenuTargetFile.name
+                                );
+                            }
+                        } else {
+                            // For non-viewable files, download
+                            window.fileOps.downloadFile(
+                                window.app.contextMenuTargetFile.id,
+                                window.app.contextMenuTargetFile.name
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching file details:', error);
+                        // On error, fallback to download
+                        window.fileOps.downloadFile(
+                            window.app.contextMenuTargetFile.id,
+                            window.app.contextMenuTargetFile.name
+                        );
+                    });
+            }
+            window.ui.closeFileContextMenu();
+        });
+        
+        document.getElementById('download-file-option').addEventListener('click', () => {
+            if (window.app.contextMenuTargetFile) {
+                window.fileOps.downloadFile(
+                    window.app.contextMenuTargetFile.id,
+                    window.app.contextMenuTargetFile.name
+                );
+            }
+            window.ui.closeFileContextMenu();
+        });
+        
+        document.getElementById('favorite-file-option').addEventListener('click', () => {
+            if (window.app.contextMenuTargetFile) {
+                const file = window.app.contextMenuTargetFile;
+                
+                // Check if file is already in favorites to toggle
+                if (window.favorites && window.favorites.isFavorite(file.id, 'file')) {
+                    // Remove from favorites
+                    window.favorites.removeFromFavorites(file.id, 'file');
+                    // Update menu item text
+                    document.getElementById('favorite-file-option').querySelector('span').textContent = 
+                        window.i18n ? window.i18n.t('actions.favorite') : 'Añadir a favoritos';
+                } else {
+                    // Add to favorites
+                    window.favorites.addToFavorites(
+                        file.id,
+                        file.name,
+                        'file',
+                        file.folder_id
+                    );
+                    // Update menu item text
+                    document.getElementById('favorite-file-option').querySelector('span').textContent = 
+                        window.i18n ? window.i18n.t('actions.unfavorite') : 'Quitar de favoritos';
+                }
+            }
+            window.ui.closeFileContextMenu();
+        });
+        
         document.getElementById('move-file-option').addEventListener('click', () => {
             if (window.app.contextMenuTargetFile) {
                 this.showMoveDialog(window.app.contextMenuTargetFile, 'file');

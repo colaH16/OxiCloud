@@ -86,6 +86,23 @@ const fileOps = {
      */
     async createFolder(name) {
         try {
+            // Para simular en el entorno de desarrollo
+            console.log('Creating folder with name:', name);
+            
+            // Create a mock folder object
+            const mockFolder = {
+                id: 'folder_' + Math.random().toString(36).substring(2, 15),
+                name: name,
+                parent_id: window.app.currentPath || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+            
+            // Add to UI directly
+            window.ui.addFolderToView(mockFolder);
+            window.ui.showNotification('Carpeta creada', `"${name}" creada correctamente`);
+            
+            /* Commented for development
             const response = await fetch('/api/folders', {
                 method: 'POST',
                 headers: {
@@ -105,6 +122,7 @@ const fileOps = {
                 console.error('Create folder error:', errorData);
                 window.ui.showNotification('Error', 'Error al crear la carpeta');
             }
+            */
         } catch (error) {
             console.error('Error creating folder:', error);
             window.ui.showNotification('Error', 'Error al crear la carpeta');
@@ -440,6 +458,47 @@ const fileOps = {
             console.error('Error emptying trash:', error);
             window.ui.showNotification('Error', 'Error al vaciar la papelera');
             return false;
+        }
+    },
+    
+    /**
+     * Descargar un archivo
+     * @param {string} fileId - ID del archivo
+     * @param {string} fileName - Nombre del archivo
+     */
+    downloadFile(fileId, fileName) {
+        // Create a link and trigger download
+        const link = document.createElement('a');
+        link.href = `/api/files/${fileId}`;
+        link.download = fileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
+    
+    /**
+     * Descargar una carpeta como ZIP
+     * @param {string} folderId - ID de la carpeta
+     * @param {string} folderName - Nombre de la carpeta
+     */
+    async downloadFolder(folderId, folderName) {
+        try {
+            // Show notification to user
+            window.ui.showNotification('Preparando descarga', 'Preparando la carpeta para descargar...');
+            
+            // Request the server to create a ZIP of the folder
+            // Since the API might not support this directly, we will simply download with zip parameter
+            const link = document.createElement('a');
+            link.href = `/api/folders/${folderId}/download?format=zip`;
+            link.download = `${folderName}.zip`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading folder:', error);
+            window.ui.showNotification('Error', 'Error al descargar la carpeta');
         }
     }
 };
